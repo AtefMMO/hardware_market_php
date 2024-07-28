@@ -3,8 +3,9 @@ include "../connect.php";
 include "../core.php";
 $response = [];
 try{
-    $stmt = $connection->prepare("SELECT * FROM products");
-    $stmt->execute();
+    $category = secureRequest($_GET['category']);
+    $stmt = $connection->prepare("SELECT * FROM products WHERE category=?");
+    $stmt->execute(array($category));
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $response['status'] = "success";
     $response['products'] = $rows;
