@@ -43,6 +43,7 @@ try {
         "name"=>$username,
         "e-mail"=>$email,
         "address"=>$address,
+        "password"=>$password,
         "token"=>$token
     ];
 } catch (PDOException $e) {

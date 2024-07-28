@@ -26,6 +26,7 @@ try {
         "name"=>$user['name'],
         "e-mail"=>$user['e-mail'],
         "address"=>$user['address'],
+        "password"=>$user['password'],
         "token"=>$user['token']
     ];
 } catch (PDOException $e) {
