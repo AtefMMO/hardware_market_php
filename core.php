@@ -21,9 +21,13 @@ function checkLoginCredentials($email, $password)
     $stmt = $connection->prepare("Select * from `users` where `e-mail`=?");
     $stmt->execute(array($email));
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
-   //if ($user!=null && password_verify($password,$user['password'] )) {
+   if ($user!=null && password_verify($password,$user['password'] )) {
+    $token = bin2hex(random_bytes(50));
+    $stmt = $connection->prepare("UPDATE `users` SET `token`=? WHERE `e-mail`=?");
+    $stmt->execute(array($token, $email));
+    $user['token'] = $token;
     return $user;    
-   // } else {
-   //    return false;
-    //}
+    } else {
+       return false;
+    }
 }

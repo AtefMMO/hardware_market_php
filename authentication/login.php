@@ -21,11 +21,12 @@ try {
     }
 
     $response['status'] = "success";
-    $response["message"] = "you logged in successfully";
+    $response["message"] = "logged in successfully";
   $response["user"]=[
         "name"=>$user['name'],
         "e-mail"=>$user['e-mail'],
-        "address"=>$user['address']
+        "address"=>$user['address'],
+        "token"=>$user['token']
     ];
 } catch (PDOException $e) {
     $response['status'] = "error";

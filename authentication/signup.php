@@ -7,6 +7,7 @@ try {
     $email = secureRequest($_POST['e-mail']);
     $password = secureRequest($_POST['password']);
     $address = secureRequest($_POST['address']);
+    $token = bin2hex(random_bytes(50));
     if (empty($username) || empty($email) || empty($password) || empty($address)) {
         $response['status'] = 'error';
         $response['message'] = 'Please fill all fields';
@@ -28,19 +29,21 @@ try {
  
     
     $password = password_hash($password, PASSWORD_DEFAULT);
-    $stmt = $connection->prepare("INSERT INTO `users`(`name`,`e-mail`,`password`,`address`) VALUES(?,?,?,?)");
+    $stmt = $connection->prepare("INSERT INTO `users`(`name`,`e-mail`,`password`,`address`,`token`) VALUES(?,?,?,?,?)");
     $stmt->execute(array(
         $username,
         $email,
         $password,
-        $address
+        $address,
+        $token
     ));
     $response['status'] = "success";
     $response["message"] = "User Added Successfully";
     $response["user"]=[
         "name"=>$username,
         "e-mail"=>$email,
-        "address"=>$address
+        "address"=>$address,
+        "token"=>$token
     ];
 } catch (PDOException $e) {
     $response['status'] = "error";
