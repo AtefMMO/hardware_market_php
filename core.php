@@ -15,6 +15,17 @@ function checkIfEmailExists($email)
         return false;
     }
 }
+function checkIfProductExists($id)
+{
+    global $connection;
+    $stmt = $connection->prepare("Select * from `products` where `id`=?");
+    $stmt->execute(array($id));
+    if ($stmt->rowCount() > 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
 function checkLoginCredentials($email, $password)
 {
     global $connection;
