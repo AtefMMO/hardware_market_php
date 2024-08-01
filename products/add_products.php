@@ -6,13 +6,19 @@ try {
     $name = secureRequest($_POST['name']);
     $price = secureRequest($_POST['price']);
     $description = secureRequest($_POST['description']);
-    $image = secureRequest($_POST['image']);
+    $image = uploadFile($_FILES['image']);
     $category = secureRequest($_POST['category']);
     $color = secureRequest($_POST['color']);
     $sale = secureRequest($_POST['sale']);
     $quantity = secureRequest($_POST['quantity']);
     $availability = secureRequest($_POST['availability']);
     $reference = secureRequest($_POST['reference']);
+    if ($image == "File is too big" || $image == "There was an error uploading the file" || $image == "You cannot upload files of this type") {
+        $response['status'] = "error";
+        $response["message"] = $image;
+        echo json_encode($response);
+        return;
+    }
     $stmt = $connection->prepare("INSERT INTO `products`(`name`,`price`,`description`,`image`,`category`,`color`,`sale`,`quantity`,`availability`,`reference`) VALUES(?,?,?,?,?,?,?,?,?,?)");
     $stmt->execute(array(
         $name,
@@ -40,7 +46,6 @@ try {
         "availability" => $availability,
         "reference" => $reference
     ];
-    
 } catch (PDOException $e) {
     $response['status'] = "error";
     $response["message"] = "Error: " . $e->getMessage();
