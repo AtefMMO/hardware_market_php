@@ -84,3 +84,10 @@ function uploadFile($file)
         return $errorWrongExtension;
     }
 }
+function getProductById($id){
+    global $connection;
+    $stmt = $connection->prepare("SELECT * FROM `products` WHERE `id` = ?");
+    $stmt->execute(array($id));
+    $product = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $product;
+}
