@@ -91,3 +91,61 @@ function getProductById($id){
     $product = $stmt->fetch(PDO::FETCH_ASSOC);
     return $product;
 }
+function getCartProductsByUserId($user_id){
+    global $connection;
+    $stmt = $connection->prepare("SELECT * FROM `cart` WHERE `user_id` = ?");
+    $stmt->execute(array($user_id));
+    $cart = $stmt->fetchAll();
+    $products = [];
+    for($i=0;$i<count($cart);$i++){
+        $product = getProductById($cart[$i]['product_id']);
+        array_push($products,$product["id"]);
+    }
+    return $products;
+}
+function getSale($coupon){
+    global $connection;
+    $stmt=$connection->prepare("SELECT * FROM `coupons` WHERE `coupon`=?");
+    $stmt->execute(array($coupon));
+    $coupon=$stmt->fetch(PDO::FETCH_ASSOC);
+    if($coupon!=null){
+        return $coupon["value"];
+    }else{
+        return false;
+    }
+}
+function calculateItemsPriceByProductsIds($products_ids){
+    $totalPrice=0;
+    for($i=0;$i<count($products_ids);$i++){
+       $product = getProductById($products_ids[$i]);
+         $productPrice=$product['price'];
+        $totalPrice+=$productPrice;
+    }
+    return $totalPrice;
+}
+function getTotalPrice($items_price,$delivery_price,$sale){
+    $totalPrice=$items_price;
+    if($sale!=false){
+        $totalPrice=$totalPrice-$sale;
+    }
+    return $totalPrice+$delivery_price;
+}
+function getUser($user_id){
+    global $connection;
+    $stmt=$connection->prepare("SELECT * FROM `users` WHERE `id`=?");
+    $stmt->execute(array($user_id));
+    $user=$stmt->fetch(PDO::FETCH_ASSOC);
+    return $user;
+}
+function searchIfCopounExists($coupon){
+    global $connection;
+    $stmt=$connection->prepare("SELECT * FROM `coupons` WHERE `coupon`=?");
+    $stmt->execute(array($coupon));
+    $coupon=$stmt->fetch(PDO::FETCH_ASSOC);
+    if($coupon!=null){
+        return true;    
+    }else{
+        return false;
+    }
+    
+}

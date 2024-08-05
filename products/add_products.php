@@ -10,6 +10,9 @@ try {
     $category = secureRequest($_POST['category']);
     $color = secureRequest($_POST['color']);
     $sale = secureRequest($_POST['sale']);
+    if($sale>0){
+        $price = $price - ($price * $sale / 100);
+    }
     $quantity = secureRequest($_POST['quantity']);
     $availability = secureRequest($_POST['availability']);
     $reference = secureRequest($_POST['reference']);
