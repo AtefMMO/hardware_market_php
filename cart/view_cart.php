@@ -9,11 +9,15 @@ $stmt->execute([$user_id]);
 $cart = $stmt->fetchAll();
 $response['status']="success";
 $response['message']="Cart items retrieved";
+$result=[];
+
 for($i=0;$i<count($cart);$i++){
     $product=getProductById($cart[$i]['product_id']);
-    $cart[$i]=$product;
+    $product["quantity"]=$cart[$i][3];
+    $result[$i]=$product;
 }
-$response['products']=$cart;
+$response['products']=$result;
+
 }catch(PDOException $e){
  $response["status"]="error";
     $response["message"]="Invalid request";

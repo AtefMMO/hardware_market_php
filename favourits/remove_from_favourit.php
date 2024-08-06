@@ -9,10 +9,6 @@ $stmt = $connection->prepare("DELETE FROM `favourits` WHERE `user_id` = ? AND `p
 $stmt->execute(array($user_id,$product_id));
 $response['status'] = "success";
 $response["message"] = "Product Removed From Favourits";
-$response["product"] = [
-    "user_id" => $user_id,
-    "product_id" => $product_id
-];
 }catch(PDOException $e){
     $response['status'] = "error";
     $response["message"] = "Error: " . $e->getMessage();

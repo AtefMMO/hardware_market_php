@@ -103,6 +103,24 @@ function getCartProductsByUserId($user_id){
     }
     return $products;
 }
+function getAllCartProducts($user_id){
+    global $connection;
+    $stmt = $connection->prepare("SELECT * FROM `cart` WHERE `user_id` = ?");
+    $stmt->execute(array($user_id));
+    $cart = $stmt->fetchAll();
+    return $cart;
+}
+function getStockQuantitiesByIds($productsIds){
+global $connection;
+$quantities=[];
+for($i=0;$i<count($productsIds);$i++){
+    $stmt = $connection->prepare("SELECT * FROM `products` WHERE `id` = ?");
+    $stmt->execute(array($productsIds[$i]));
+    $product = $stmt->fetch(PDO::FETCH_ASSOC);
+    $quantities[$i]=$product['quantity'];
+}
+return $quantities;
+}
 function getSale($coupon){
     global $connection;
     $stmt=$connection->prepare("SELECT * FROM `coupons` WHERE `coupon`=?");
@@ -114,15 +132,23 @@ function getSale($coupon){
         return false;
     }
 }
-function calculateItemsPriceByProductsIds($products_ids){
+function getCartProductsQuantities($products){
+    $quantities=[];
+    for($i=0;$i<count($products);$i++){
+        $quantities[$i]=$products[$i][3];
+    }
+    return $quantities;
+}
+function calculateItemsPrice($products){
     $totalPrice=0;
-    for($i=0;$i<count($products_ids);$i++){
-       $product = getProductById($products_ids[$i]);
+    for($i=0;$i<count($products);$i++){
+       $product = getProductById($products[$i]['product_id']);
          $productPrice=$product['price'];
-        $totalPrice+=$productPrice;
+        $totalPrice+=$productPrice*$products[$i][3];
     }
     return $totalPrice;
 }
+
 function getTotalPrice($items_price,$delivery_price,$sale){
     $totalPrice=$items_price;
     if($sale!=false){
@@ -148,4 +174,42 @@ function searchIfCopounExists($coupon){
         return false;
     }
     
+}
+function getOrderById($order_id){
+    global $connection;
+    $stmt=$connection->prepare("SELECT * FROM `orders` WHERE `id`=?");
+    $stmt->execute(array($order_id));
+    $order=$stmt->fetch(PDO::FETCH_ASSOC);
+    return $order;
+}
+function getOrdersByUserId($user_id){
+    global $connection;
+    $stmt=$connection->prepare("SELECT * FROM `orders` WHERE `user_id`=?");
+    $stmt->execute(array($user_id));
+    $orders=$stmt->fetchAll(PDO::FETCH_ASSOC);
+    return $orders;
+}
+function eraseCart($user_id){
+    global $connection;
+    $stmt=$connection->prepare("DELETE FROM `cart` WHERE `user_id`=?");
+    $stmt->execute(array($user_id));
+}
+
+function compareBtwStockAndCartQuantities($orderQuantities,$stockQuantities){
+    for($i=0;$i<count($orderQuantities);$i++){
+        if($orderQuantities[$i]>$stockQuantities[$i]){
+            return false;
+        }
+    }
+    return true;
+}
+function checkIfProductAlreadyFavourit($user_id,$product_id){
+    global $connection;
+    $stmt=$connection->prepare("SELECT * FROM `favourits` WHERE `user_id`=? AND `product_id`=?");
+    $stmt->execute(array($user_id,$product_id));
+    if($stmt->rowCount()>0){
+        return true;
+    }else{
+        return false;
+    }
 }

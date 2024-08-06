@@ -10,9 +10,10 @@ try{
     for($i=0;$i<count($favourits);$i++){
         $favourits[$i]= getProductById($favourits[$i]['product_id']);//swap the product id with the product details
     }
-    $response['favourits'] = $favourits;
     $response['status'] = "success";
     $response["message"] = "Favourits Retrieved Successfully";
+    $response['favourits'] = $favourits;
+    
     
 }catch(PDOException $e){
     $response['status'] = "error";

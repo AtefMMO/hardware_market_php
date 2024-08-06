@@ -6,14 +6,17 @@ try {
 
     $product_id = secureRequest($_POST['product_id']);
     $user_id = secureRequest($_POST['user_id']);
+    if(checkIfProductAlreadyFavourit($user_id,$product_id)){
+       $response['status'] = "error";
+        $response['message'] = "Product already in favourit";
+       echo json_encode($response);
+        exit();
+   }
+  
     $stmt = $connection->prepare("INSERT INTO favourits (product_id,user_id) VALUES (?,?)");
     $stmt->execute([$product_id, $user_id]);
     $response['status'] = "success";
     $response['message'] = "Product added to favourit";
-    $response['data'] = [
-        "product_id" => $product_id,
-        "user_id" => $user_id
-    ];
 } catch (Exception $e) {
     $response['status'] = "error";
     $response['message'] = "Invalid request";
