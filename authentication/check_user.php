@@ -6,11 +6,9 @@ try {
     $token = secureRequest($_POST['token']);
     $user = checkToken($token);
     if ($user != false) {
-        $stmt = $connection->prepare("SELECT * FROM products");
-        $stmt->execute();
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $response['status'] = "success";
-        $response['products'] = $rows;
+        $response['message'] = "correct token";
+        
     } else {
         $response['status'] = "error";
         $response['message'] = "Invalid token";

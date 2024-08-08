@@ -43,6 +43,34 @@ function checkLoginCredentials($email, $password)
         return false;
     }
 }
+function checkLoginCredentialsMobile($email, $password)
+{
+    global $connection;
+    $stmt = $connection->prepare("Select * from `users` where `e-mail`=?");
+    $stmt->execute(array($email));
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($user != null && password_verify($password, $user['password'])) {
+        $mobileToken = bin2hex(random_bytes(50));
+        $stmt = $connection->prepare("UPDATE `users` SET `mobile_token`=? WHERE `e-mail`=?");
+        $stmt->execute(array($mobileToken, $email));
+        $user['mobile_token'] = $mobileToken;
+        return $user;
+    } else {
+        return false;
+    }
+}
+function checkOldPassword($id, $old_password)
+{
+    global $connection;
+    $stmt = $connection->prepare("Select * from `users` where `id`=?");
+    $stmt->execute(array($id));
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($user != null && password_verify($old_password, $user['password'])) {
+        return true;
+    } else {
+        return false;
+    }
+}
 function checkToken($token)
 {
     global $connection;
@@ -84,132 +112,224 @@ function uploadFile($file)
         return $errorWrongExtension;
     }
 }
-function getProductById($id){
+function getProductById($id)
+{
     global $connection;
     $stmt = $connection->prepare("SELECT * FROM `products` WHERE `id` = ?");
     $stmt->execute(array($id));
     $product = $stmt->fetch(PDO::FETCH_ASSOC);
     return $product;
 }
-function getCartProductsByUserId($user_id){
+function getCartProductsByUserId($user_id)
+{
     global $connection;
     $stmt = $connection->prepare("SELECT * FROM `cart` WHERE `user_id` = ?");
     $stmt->execute(array($user_id));
     $cart = $stmt->fetchAll();
     $products = [];
-    for($i=0;$i<count($cart);$i++){
+    for ($i = 0; $i < count($cart); $i++) {
         $product = getProductById($cart[$i]['product_id']);
-        array_push($products,$product["id"]);
+        array_push($products, $product["id"]);
     }
     return $products;
 }
-function getAllCartProducts($user_id){
+function getAllCartProducts($user_id)
+{
     global $connection;
     $stmt = $connection->prepare("SELECT * FROM `cart` WHERE `user_id` = ?");
     $stmt->execute(array($user_id));
     $cart = $stmt->fetchAll();
     return $cart;
 }
-function getStockQuantitiesByIds($productsIds){
-global $connection;
-$quantities=[];
-for($i=0;$i<count($productsIds);$i++){
-    $stmt = $connection->prepare("SELECT * FROM `products` WHERE `id` = ?");
-    $stmt->execute(array($productsIds[$i]));
-    $product = $stmt->fetch(PDO::FETCH_ASSOC);
-    $quantities[$i]=$product['quantity'];
-}
-return $quantities;
-}
-function getSale($coupon){
+function getStockQuantitiesByIds($productsIds)
+{
     global $connection;
-    $stmt=$connection->prepare("SELECT * FROM `coupons` WHERE `coupon`=?");
-    $stmt->execute(array($coupon));
-    $coupon=$stmt->fetch(PDO::FETCH_ASSOC);
-    if($coupon!=null){
-        return $coupon["value"];
-    }else{
-        return false;
-    }
-}
-function getCartProductsQuantities($products){
-    $quantities=[];
-    for($i=0;$i<count($products);$i++){
-        $quantities[$i]=$products[$i][3];
+    $quantities = [];
+    for ($i = 0; $i < count($productsIds); $i++) {
+        $stmt = $connection->prepare("SELECT * FROM `products` WHERE `id` = ?");
+        $stmt->execute(array($productsIds[$i]));
+        $product = $stmt->fetch(PDO::FETCH_ASSOC);
+        $quantities[$i] = $product['quantity'];
     }
     return $quantities;
 }
-function calculateItemsPrice($products){
-    $totalPrice=0;
-    for($i=0;$i<count($products);$i++){
-       $product = getProductById($products[$i]['product_id']);
-         $productPrice=$product['price'];
-        $totalPrice+=$productPrice*$products[$i][3];
+function getSale($coupon)
+{
+    global $connection;
+    $stmt = $connection->prepare("SELECT * FROM `coupons` WHERE `coupon`=?");
+    $stmt->execute(array($coupon));
+    $coupon = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($coupon != null) {
+        return $coupon["value"];
+    } else {
+        return false;
+    }
+}
+function getCartProductsQuantities($products)
+{
+    $quantities = [];
+    for ($i = 0; $i < count($products); $i++) {
+        $quantities[$i] = $products[$i][3];
+    }
+    return $quantities;
+}
+function calculateItemsPrice($products)
+{
+    $totalPrice = 0;
+    for ($i = 0; $i < count($products); $i++) {
+        $product = getProductById($products[$i]['product_id']);
+        $productPrice = $product['price'];
+        $totalPrice += $productPrice * $products[$i][3];
     }
     return $totalPrice;
 }
 
-function getTotalPrice($items_price,$delivery_price,$sale){
-    $totalPrice=$items_price;
-    if($sale!=false){
-        $totalPrice=$totalPrice-$sale;
+function getTotalPrice($items_price, $delivery_price, $sale)
+{
+    $totalPrice = $items_price;
+    if ($sale != false) {
+        $totalPrice = $totalPrice - $sale;
     }
-    return $totalPrice+$delivery_price;
+    return $totalPrice + $delivery_price;
 }
-function getUser($user_id){
+function getUser($user_id)
+{
     global $connection;
-    $stmt=$connection->prepare("SELECT * FROM `users` WHERE `id`=?");
+    $stmt = $connection->prepare("SELECT * FROM `users` WHERE `id`=?");
     $stmt->execute(array($user_id));
-    $user=$stmt->fetch(PDO::FETCH_ASSOC);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
     return $user;
 }
-function searchIfCopounExists($coupon){
+function searchIfCopounExists($coupon)
+{
     global $connection;
-    $stmt=$connection->prepare("SELECT * FROM `coupons` WHERE `coupon`=?");
+    $stmt = $connection->prepare("SELECT * FROM `coupons` WHERE `coupon`=?");
     $stmt->execute(array($coupon));
-    $coupon=$stmt->fetch(PDO::FETCH_ASSOC);
-    if($coupon!=null){
-        return true;    
-    }else{
+    $coupon = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($coupon != null) {
+        return true;
+    } else {
         return false;
     }
-    
 }
-function getOrderById($order_id){
+function getOrderById($order_id)
+{
     global $connection;
-    $stmt=$connection->prepare("SELECT * FROM `orders` WHERE `id`=?");
+    $stmt = $connection->prepare("SELECT * FROM `orders` WHERE `id`=?");
     $stmt->execute(array($order_id));
-    $order=$stmt->fetch(PDO::FETCH_ASSOC);
+    $order = $stmt->fetch(PDO::FETCH_ASSOC);
     return $order;
 }
-function getOrdersByUserId($user_id){
+function getOrdersByUserId($user_id)
+{
     global $connection;
-    $stmt=$connection->prepare("SELECT * FROM `orders` WHERE `user_id`=?");
+    $stmt = $connection->prepare("SELECT * FROM `orders` WHERE `user_id`=?");
     $stmt->execute(array($user_id));
-    $orders=$stmt->fetchAll(PDO::FETCH_ASSOC);
+    $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
     return $orders;
 }
-function eraseCart($user_id){
+function eraseCart($user_id)
+{
     global $connection;
-    $stmt=$connection->prepare("DELETE FROM `cart` WHERE `user_id`=?");
+    $stmt = $connection->prepare("DELETE FROM `cart` WHERE `user_id`=?");
     $stmt->execute(array($user_id));
 }
 
-function compareBtwStockAndCartQuantities($orderQuantities,$stockQuantities){
-    for($i=0;$i<count($orderQuantities);$i++){
-        if($orderQuantities[$i]>$stockQuantities[$i]){
+function compareBtwStockAndCartQuantities($orderQuantities, $stockQuantities)
+{
+    for ($i = 0; $i < count($orderQuantities); $i++) {
+        if ($orderQuantities[$i] > $stockQuantities[$i]) {
             return false;
         }
     }
     return true;
 }
-function checkIfProductAlreadyFavourit($user_id,$product_id){
+function checkIfProductAlreadyFavourit($user_id, $product_id)
+{
     global $connection;
-    $stmt=$connection->prepare("SELECT * FROM `favourits` WHERE `user_id`=? AND `product_id`=?");
-    $stmt->execute(array($user_id,$product_id));
-    if($stmt->rowCount()>0){
+    $stmt = $connection->prepare("SELECT * FROM `favourits` WHERE `user_id`=? AND `product_id`=?");
+    $stmt->execute(array($user_id, $product_id));
+    if ($stmt->rowCount() > 0) {
         return true;
-    }else{
+    } else {
         return false;
     }
+}
+function getUserAdresses($user_id)
+{
+    global $connection;
+    $stmt = $connection->prepare("SELECT * FROM `addresses` WHERE `user_id`=?");
+    $stmt->execute(array($user_id));
+    $adresses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    return $adresses;
+}
+function getUserAdressesCount($user_id)
+{
+    global $connection;
+    $stmt = $connection->prepare("SELECT * FROM `addresses` WHERE `user_id`=?");
+    $stmt->execute(array($user_id));
+    $adresses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    return count($adresses);
+}
+function checkIfUserHavePrimaryAddress($user_id)
+{
+    $addresses = getUserAdresses($user_id);
+    for ($i = 0; $i < count($addresses); $i++) {
+        if ($addresses[$i]['is_primary_address'] == 1) {
+            return true;
+        }
+    }
+    return false;
+}
+function setOtherAddressesToNotPrimary($user_id, $address_id)
+{
+    global $connection;
+    $addresses = getUserAdresses($user_id);
+    for ($i = 0; $i < count($addresses); $i++) {
+        if ($addresses[$i]['id'] != $address_id) {
+            $stmt = $connection->prepare("UPDATE `addresses` SET `is_primary_address`=0 WHERE `id`=?");
+            $stmt->execute(array($addresses[$i]['id']));
+        }
+    }
+}
+function setAddressToPrimary($user_id, $address_id)
+{
+    global $connection;
+    setOtherAddressesToNotPrimary($user_id, $address_id);
+    $stmt = $connection->prepare("UPDATE `addresses` SET `is_primary_address`=1 WHERE `id`=?");
+    $stmt->execute(array($address_id));
+    $stmt = $connection->prepare("UPDATE `users` SET `primary_address_id`=$address_id WHERE `id`=?");
+    $stmt->execute(array($user_id));
+}
+function getPrimaryAddressId($user_id)
+{
+    global $connection;
+    $stmt = $connection->prepare("SELECT * FROM `addresses` WHERE `user_id`=? AND `is_primary_address`=1");
+    $stmt->execute(array($user_id));
+    $address = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $address['id'];
+}
+function updateOrderStatus($order_id, $status)
+{
+    global $connection;
+    $stmt = $connection->prepare("UPDATE `orders` SET `order_status`=? WHERE `id`=?");
+    $stmt->execute(array($status, $order_id));
+}
+function editProductsSimillaritySet($proudctsIds, $simillaritySetId)
+{
+    global $connection;
+    for ($i = 0; $i < count($proudctsIds); $i++) {
+        $product = getProductById($proudctsIds[$i]);
+        $product['simillar_products_id'] = $simillaritySetId;
+        $stmt = $connection->prepare("UPDATE `products` SET `simillar_products_id`=? WHERE `id`=?");
+        $stmt->execute(array($simillaritySetId, $proudctsIds[$i]));
+    }
+}
+function getSimillarProducts($simillaritySetId)
+{
+    global $connection;
+    $stmt = $connection->prepare("SELECT * FROM `products` WHERE `simillar_products_id`=?");
+    $stmt->execute(array($simillaritySetId));
+    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    return $products;
 }

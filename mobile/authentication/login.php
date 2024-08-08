@@ -1,6 +1,6 @@
 <?php
-include "../connect.php";
-include "../core.php";
+include "../../connect.php";
+include "../../core.php";
 $response = [];
 try {
 
@@ -12,7 +12,7 @@ try {
         echo json_encode($response);
         return;
     }
-    $user=checkLoginCredentials($email, $password);
+    $user=checkLoginCredentialsMobile($email, $password);
     if (!$user) {
         $response['status'] = 'error';
         $response['message'] = 'Invalid email or password';
@@ -27,7 +27,7 @@ try {
         "phone_number"=>$user['phone_number'],
         "signup_date"=>$user['signup_date'],
         "id"=>$user['id'],
-        "token"=>$user['token'],
+        "mobile_token"=>$user['mobile_token'],
     ];
 } catch (PDOException $e) {
     $response['status'] = "error";

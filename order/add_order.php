@@ -11,7 +11,7 @@ try {
         echo json_encode($response);
         exit();
     }
-    $address = getUser($user_id)['address'];
+    $address = getPrimaryAddressId($user_id);
     $coupon = secureRequest($_POST['coupon']);
     if ($coupon != null) {
         if (searchIfCopounExists($coupon) == false) {
@@ -38,7 +38,7 @@ try {
     $items_price = calculateItemsPrice($cartProducts);
     $total_price = getTotalPrice($items_price, $delivery_price, $sale);
     $order_status = secureRequest($_POST['order_status']);
-    $stmt = $connection->prepare("INSERT INTO orders (user_id,products_ids,address,coupon,sale,delivery_price,items_price,total_price,order_status,payment_type,products_quantities) VALUES (?,?,?,?,?,?,?,?,?,?,?)");
+    $stmt = $connection->prepare("INSERT INTO orders (user_id,products_ids,address_id,coupon,sale,delivery_price,items_price,total_price,order_status,payment_type,products_quantities) VALUES (?,?,?,?,?,?,?,?,?,?,?)");
     $stmt->execute([$user_id, json_encode($products_ids), $address, $coupon, $sale, $delivery_price, $items_price, $total_price, $order_status, $paymentType,json_encode($productsQuantities)]);
     eraseCart($user_id);
     $response['status'] = "success";
@@ -47,7 +47,7 @@ try {
         "user_id" => $user_id,
         "products_ids" => $products_ids,
         "products_quantities" => $productsQuantities,
-        "address" => $address,
+        "address_id" => $address,
         "coupon" => $coupon,
         "sale" => $sale,
         "delivery_price" => $delivery_price,
