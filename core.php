@@ -315,21 +315,21 @@ function updateOrderStatus($order_id, $status)
     $stmt = $connection->prepare("UPDATE `orders` SET `order_status`=? WHERE `id`=?");
     $stmt->execute(array($status, $order_id));
 }
-function editProductsSimillaritySet($proudctsIds, $simillaritySetId)
+function editProductsSimilaritySet($proudctsIds, $similaritySetId)
 {
     global $connection;
     for ($i = 0; $i < count($proudctsIds); $i++) {
         $product = getProductById($proudctsIds[$i]);
-        $product['simillar_products_id'] = $simillaritySetId;
-        $stmt = $connection->prepare("UPDATE `products` SET `simillar_products_id`=? WHERE `id`=?");
-        $stmt->execute(array($simillaritySetId, $proudctsIds[$i]));
+        $product['similar_products_id'] = $similaritySetId;
+        $stmt = $connection->prepare("UPDATE `products` SET `similar_products_id`=? WHERE `id`=?");
+        $stmt->execute(array($similaritySetId, $proudctsIds[$i]));
     }
 }
-function getSimillarProducts($simillaritySetId)
+function getSimilarProducts($similaritySetId)
 {
     global $connection;
-    $stmt = $connection->prepare("SELECT * FROM `products` WHERE `simillar_products_id`=?");
-    $stmt->execute(array($simillaritySetId));
+    $stmt = $connection->prepare("SELECT * FROM `products` WHERE `similar_products_id`=?");
+    $stmt->execute(array($similaritySetId));
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
     return $products;
 }

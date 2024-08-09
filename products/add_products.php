@@ -10,6 +10,7 @@ try {
     $category = secureRequest($_POST['category']);
     $color = secureRequest($_POST['color']);
     $sale = secureRequest($_POST['sale']);
+    $priceBeforeSale = $price;
     if($sale>0){
         $price = $price - ($price * $sale / 100);
     }
@@ -22,7 +23,7 @@ try {
         echo json_encode($response);
         return;
     }
-    $stmt = $connection->prepare("INSERT INTO `products`(`name`,`price`,`description`,`image`,`category`,`color`,`sale`,`quantity`,`availability`,`reference`) VALUES(?,?,?,?,?,?,?,?,?,?)");
+    $stmt = $connection->prepare("INSERT INTO `products`(`name`,`price`,`description`,`image`,`category`,`color`,`sale`,`quantity`,`availability`,`reference`,`price_before_sale`) VALUES(?,?,?,?,?,?,?,?,?,?,?)");
     $stmt->execute(array(
         $name,
         $price,
@@ -33,20 +34,22 @@ try {
         $sale,
         $quantity,
         $availability,
-        $reference
+        $reference,
+        $priceBeforeSale
     ));
     $response['status'] = "success";
     $response["message"] = "Product Added Successfully";
     $response["product"] = [
         "name" => $name,
         "price" => $price,
+        "price_before_sale" => (float) $priceBeforeSale, 
         "description" => $description,
         "image" => $image,
         "category" => $category,
         "color" => $color,
-        "sale" => $sale,
-        "quantity" => $quantity,
-        "availability" => $availability,
+        "sale" => (int) $sale,
+        "quantity" => (int) $quantity, 
+        "availability" => (int) $availability,
         "reference" => $reference
     ];
 } catch (PDOException $e) {
