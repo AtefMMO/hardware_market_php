@@ -333,3 +333,26 @@ function getSimillarProducts($simillaritySetId)
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
     return $products;
 }
+function getProductFromCartById($user_id, $product_id)
+{
+    global $connection;
+    $stmt = $connection->prepare("SELECT * FROM `cart` WHERE `user_id`=? AND `product_id`=?");
+    $stmt->execute(array($user_id, $product_id));
+    $product = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $product;
+}
+function decreaseProductQuantityInCart($user_id, $product_id)
+{
+    global $connection;
+    $cart = getProductFromCartById($user_id, $product_id);
+    $stmt = $connection->prepare("UPDATE `cart` SET `quantity`=? WHERE `user_id`=? AND `product_id`=?");
+    $stmt->execute(array($cart['quantity'] - 1, $user_id, $product_id));
+    $product = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $product; 
+}
+function deleteAllProductsInCart($user_id)
+{
+    global $connection;
+    $stmt = $connection->prepare("DELETE FROM `cart` WHERE `user_id`=?");
+    $stmt->execute(array($user_id));
+}
