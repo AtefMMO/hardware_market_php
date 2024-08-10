@@ -356,3 +356,12 @@ function deleteAllProductsInCart($user_id)
     $stmt = $connection->prepare("DELETE FROM `cart` WHERE `user_id`=?");
     $stmt->execute(array($user_id));
 }
+function getSimilarProductsByProductId($product_id)
+{
+    global $connection;
+    $product = getProductById($product_id);
+    $stmt = $connection->prepare("SELECT * FROM `products` WHERE `similar_products_id`=?");
+    $stmt->execute(array($product['similar_products_id']));
+    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    return $products;
+}
