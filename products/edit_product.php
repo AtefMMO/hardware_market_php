@@ -11,7 +11,8 @@ try {
     $color = secureRequest($_POST['color']);
     $sale = secureRequest($_POST['sale']);
     $priceBeforeSale = $price;
-    if($sale>0){
+    $manufacturer = secureRequest($_POST['manufacturer_name']);
+    if ($sale > 0) {
         $price = $price - ($price * $sale / 100);
     }
     $quantity = secureRequest($_POST['quantity']);
@@ -31,7 +32,7 @@ try {
         echo json_encode($response);
         return;
     }
-    $stmt = $connection->prepare("UPDATE `products` SET `name`=?,`price`=?,`description`=?,`image`=?,`category`=?,`color`=?,`sale`=?,`quantity`=?,`availability`=?,`reference`=?,`price_before_sale`=? WHERE id=?");
+    $stmt = $connection->prepare("UPDATE `products` SET `name`=?,`price`=?,`description`=?,`image`=?,`category`=?,`color`=?,`sale`=?,`quantity`=?,`availability`=?,`reference`=?,`price_before_sale`=?,`manufacturer_name`=? WHERE id=?");
     $stmt->execute(array(
         $name,
         $price,
@@ -44,23 +45,25 @@ try {
         $availability,
         $reference,
         $priceBeforeSale,
+        $manufacturer,
         $id,
     ));
 
     $response['status'] = "success";
     $response["message"] = "Product Updated Successfully";
     $response["product"] = [
-       "name" => $name,
-        "price" =>(float)  $price,
-        "price_before_sale" => (float) $priceBeforeSale, 
+        "name" => $name,
+        "price" => (float)  $price,
+        "price_before_sale" => (float) $priceBeforeSale,
         "description" => $description,
         "image" => $image,
         "category" => $category,
         "color" => $color,
         "sale" => (int) $sale,
-        "quantity" => (int) $quantity, 
+        "quantity" => (int) $quantity,
         "availability" => (int) $availability,
-        "reference" => $reference
+        "reference" => $reference,
+        "manufacturer_name" => $manufacturer
     ];
 } catch (PDOException $e) {
     $response['status'] = "error";

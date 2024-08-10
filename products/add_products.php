@@ -10,8 +10,10 @@ try {
     $category = secureRequest($_POST['category']);
     $color = secureRequest($_POST['color']);
     $sale = secureRequest($_POST['sale']);
+    $manufacturer = secureRequest($_POST['manufacturer_name']);
+    $similar_products_id = null;
     $priceBeforeSale = $price;
-    if($sale>0){
+    if ($sale > 0) {
         $price = $price - ($price * $sale / 100);
     }
     $quantity = secureRequest($_POST['quantity']);
@@ -23,7 +25,7 @@ try {
         echo json_encode($response);
         return;
     }
-    $stmt = $connection->prepare("INSERT INTO `products`(`name`,`price`,`description`,`image`,`category`,`color`,`sale`,`quantity`,`availability`,`reference`,`price_before_sale`) VALUES(?,?,?,?,?,?,?,?,?,?,?)");
+    $stmt = $connection->prepare("INSERT INTO `products`(`name`,`price`,`description`,`image`,`category`,`color`,`sale`,`quantity`,`availability`,`reference`,`price_before_sale`,`similar_products_id`,`manufacturer_name`) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)");
     $stmt->execute(array(
         $name,
         $price,
@@ -35,22 +37,26 @@ try {
         $quantity,
         $availability,
         $reference,
-        $priceBeforeSale
+        $priceBeforeSale,
+        $similar_products_id,
+        $manufacturer,
     ));
     $response['status'] = "success";
     $response["message"] = "Product Added Successfully";
     $response["product"] = [
         "name" => $name,
         "price" => $price,
-        "price_before_sale" => (float) $priceBeforeSale, 
+        "price_before_sale" => (float) $priceBeforeSale,
         "description" => $description,
         "image" => $image,
         "category" => $category,
         "color" => $color,
         "sale" => (int) $sale,
-        "quantity" => (int) $quantity, 
+        "quantity" => (int) $quantity,
         "availability" => (int) $availability,
-        "reference" => $reference
+        "reference" => $reference,
+        "similar_products_id" => (int) $similar_products_id,
+        "manufacturer_name" => $manufacturer
     ];
 } catch (PDOException $e) {
     $response['status'] = "error";
