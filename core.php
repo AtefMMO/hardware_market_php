@@ -360,8 +360,8 @@ function getSimilarProductsByProductId($product_id)
 {
     global $connection;
     $product = getProductById($product_id);
-    $stmt = $connection->prepare("SELECT * FROM `products` WHERE `similar_products_id`=?");
-    $stmt->execute(array($product['similar_products_id']));
+    $stmt = $connection->prepare("SELECT * FROM `products` WHERE `similar_products_id`=? AND `id`!=?");
+    $stmt->execute(array($product['similar_products_id'], $product_id));
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
     return $products;
 }
@@ -385,4 +385,10 @@ function removeProductFromSimilarProducts($product)
     $stmt->execute(array(json_encode($products), $product['similar_products_id']));
     $stmt = $connection->prepare("UPDATE `products` SET `similar_products_id`=null WHERE `id`=?");
     $stmt->execute(array($product['id']));
+}
+function deleteSimilarityFromProducts($set_id)
+{
+    global $connection;
+    $stmt = $connection->prepare("UPDATE `products` SET `similar_products_id`=null WHERE `similar_products_id`=?");
+    $stmt->execute(array($set_id));
 }
