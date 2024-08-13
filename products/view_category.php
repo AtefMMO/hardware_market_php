@@ -8,7 +8,7 @@ try{
     $stmt->execute(array($category));
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $response['status'] = "success";
-    $response['products'] = $rows;
+    $response['categories'] = $rows;
 }catch(PDOException $e){
     $response['status'] = "error";
     $response['message'] = "Error: ".$e->getMessage();

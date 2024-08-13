@@ -348,7 +348,7 @@ function decreaseProductQuantityInCart($user_id, $product_id)
     $stmt = $connection->prepare("UPDATE `cart` SET `quantity`=? WHERE `user_id`=? AND `product_id`=?");
     $stmt->execute(array($cart['quantity'] - 1, $user_id, $product_id));
     $product = $stmt->fetch(PDO::FETCH_ASSOC);
-    return $product; 
+    return $product;
 }
 function deleteAllProductsInCart($user_id)
 {
@@ -364,4 +364,25 @@ function getSimilarProductsByProductId($product_id)
     $stmt->execute(array($product['similar_products_id']));
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
     return $products;
+}
+function getSimilarProductsSet($set_id)
+{
+    global $connection;
+    $stmt = $connection->prepare("SELECT * FROM `similar_products` WHERE `id`=?");
+    $stmt->execute(array($set_id));
+    $set = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $set;
+}
+function removeProductFromSimilarProducts($product)
+{
+    global $connection;
+   
+    $set = getSimilarProductsSet($product['similar_products_id']);
+    $products = json_decode($set['products_ids']);
+    $index = array_search($product['id'], $products);
+    $products[$index] = null;
+    $stmt = $connection->prepare("UPDATE `similar_products` SET `products_ids`=? WHERE `id`=?");
+    $stmt->execute(array(json_encode($products), $product['similar_products_id']));
+    $stmt = $connection->prepare("UPDATE `products` SET `similar_products_id`=null WHERE `id`=?");
+    $stmt->execute(array($product['id']));
 }

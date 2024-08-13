@@ -5,6 +5,8 @@ $response = [];
 try{
     $id=secureRequest($_POST['id']);
     if(checkIfProductExists($id)){
+        $product=getProductById($id);
+        removeProductFromSimilarProducts($product);
         $stmt=$connection->prepare("DELETE FROM products WHERE id=?");
         $stmt->execute(array($id));
         $response['status']="success";
