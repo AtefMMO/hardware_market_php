@@ -392,3 +392,10 @@ function deleteSimilarityFromProducts($set_id)
     $stmt = $connection->prepare("UPDATE `products` SET `similar_products_id`=null WHERE `similar_products_id`=?");
     $stmt->execute(array($set_id));
 }
+function showSimilaritySets(){
+    global $connection;
+    $stmt = $connection->prepare("SELECT * FROM `similar_products`");
+    $stmt->execute();
+    $sets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    return $sets;
+}
