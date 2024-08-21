@@ -3,7 +3,7 @@ include("../connect.php");
 include("../core.php");
 $response=[];
 try{
-$product_id=json_decode($_GET['product_id']);
+$product_id=secureRequest($_GET['product_id']);
 $products=getSimilarProductsByProductId( $product_id );
 $response['status']="success";
 $response["message"]= "Similar Products Retrieved Successfully";
