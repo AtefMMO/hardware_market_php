@@ -237,7 +237,7 @@ function checkIfProductAlreadyFavourit($user_id, $product_id)
 
 //-----------------------------------------------------------------------------------------------------------
 //address_functions
-function getUserAdresses($user_id)
+function getUserAdresses($user_id)//get all user addresses
 {
     global $connection;
     $stmt = $connection->prepare("SELECT * FROM `addresses` WHERE `user_id`=?");
@@ -245,7 +245,7 @@ function getUserAdresses($user_id)
     $adresses = $stmt->fetchAll(PDO::FETCH_ASSOC);
     return $adresses;
 }
-function getUserAdressesCount($user_id)
+function getUserAdressesCount($user_id)//get number of user addresses
 {
     global $connection;
     $stmt = $connection->prepare("SELECT * FROM `addresses` WHERE `user_id`=?");
@@ -253,7 +253,37 @@ function getUserAdressesCount($user_id)
     $adresses = $stmt->fetchAll(PDO::FETCH_ASSOC);
     return count($adresses);
 }
-function checkIfUserHavePrimaryAddress($user_id)
+function getAddress($address_id)//get address by id
+{
+    global $connection;
+    $stmt = $connection->prepare("SELECT * FROM `addresses` WHERE `id`=?");
+    $stmt->execute(array($address_id));
+    $address = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $address;
+}
+function checkIfAddressIsPrimary($address_id)//check if address is primary
+{
+    $address = getAddress($address_id);
+    if ( $address['is_primary_address'] == 1) {
+        return true;
+    } else {
+        return false;
+    }
+}
+function deleteAddress($address_id,$user_id)//delete address
+{
+    removeAddressFromUserIfPrimary($address_id,$user_id);
+    global $connection;
+    $stmt = $connection->prepare("DELETE FROM `addresses` WHERE `id`=?");
+    $stmt->execute(array($address_id));
+}
+function removeAddressFromUserIfPrimary($address_id,$user_id)//remove address from user if primary
+{
+    if(checkIfAddressIsPrimary($address_id)){
+        setAddressToNotPrimary($user_id);
+    }
+}
+function checkIfUserHavePrimaryAddress($user_id)//check if user has primary address
 {
     $addresses = getUserAdresses($user_id);
     for ($i = 0; $i < count($addresses); $i++) {
@@ -263,7 +293,13 @@ function checkIfUserHavePrimaryAddress($user_id)
     }
     return false;
 }
-function setOtherAddressesToNotPrimary($user_id, $address_id)
+function setAddressToNotPrimary($user_id)//set address to not primary at user table
+{
+  global $connection;
+    $stmt = $connection->prepare("UPDATE `users` SET `primary_address_id`=null WHERE `id`=?");
+    $stmt->execute(array($user_id));
+}
+function setOtherAddressesToNotPrimary($user_id, $address_id)//set other addresses to not primary
 {
     global $connection;
     $addresses = getUserAdresses($user_id);
@@ -274,7 +310,7 @@ function setOtherAddressesToNotPrimary($user_id, $address_id)
         }
     }
 }
-function setAddressToPrimary($user_id, $address_id)
+function setAddressToPrimary($user_id, $address_id)//set address to primary
 {
     global $connection;
     setOtherAddressesToNotPrimary($user_id, $address_id);
@@ -283,7 +319,7 @@ function setAddressToPrimary($user_id, $address_id)
     $stmt = $connection->prepare("UPDATE `users` SET `primary_address_id`=$address_id WHERE `id`=?");
     $stmt->execute(array($user_id));
 }
-function getPrimaryAddressId($user_id)
+function getPrimaryAddressId($user_id)//get primary address id
 {
     global $connection;
     $stmt = $connection->prepare("SELECT * FROM `addresses` WHERE `user_id`=? AND `is_primary_address`=1");
@@ -454,7 +490,6 @@ function doesProuctHaveSimilarity($product)//check if product has a similarity s
 }
 function addProductToSimilaritySet($product_id, $set_id)//add product to similarity set
 {
-
     $products = getSimilarProductsSet($set_id);
     $products = json_decode($products['products_ids']);
     array_push($products, (int)$product_id);
