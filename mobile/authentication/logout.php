@@ -1,6 +1,6 @@
 <?php
-include "../connect.php";
-include "../core.php";
+include "../../connect.php";
+include "../../core.php";
 $response = [];
 try{
 $id=secureRequest($_GET['id']);
