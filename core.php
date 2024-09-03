@@ -501,3 +501,26 @@ function addProductToSimilaritySet($product_id, $set_id)//add product to similar
 }
 
 //-----------------------------------------------------------------------------------------------------------
+//featured_products_functions
+function checkIfProductExistsInFeaturedProducts($id)
+{
+    global $connection;
+    $stmt = $connection->prepare("Select * from `featured_products` where `product_id`=?");
+    $stmt->execute(array($id));
+    if ($stmt->rowCount() > 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+function getFeaturedProducts(){
+    global $connection;
+    $stmt = $connection->prepare("SELECT * FROM `featured_products`");
+    $stmt->execute();
+    $featured_products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    for($i=0;$i<count($featured_products);$i++){
+        $product = getProductById($featured_products[$i]['product_id']);
+        $featured_products[$i]['product'] = $product;
+    }
+    return $featured_products;
+}
